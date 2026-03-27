@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英単語練習 🌸</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&family=Kaisei+Decol:wght@400;700&display=swap');
+
+  :root {
+    --pink: #FF6B9D;
+    --peach: #FFB347;
+    --mint: #4ECDC4;
+    --sky: #74B9FF;
+    --lavender: #A29BFE;
+    --bg: #FFF5F8;
+    --card: #FFFFFF;
+    --text: #2D3436;
+    --correct: #00B894;
+    --wrong: #E17055;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, var(--pink), var(--peach));
+    padding: 16px 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(255,107,157,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '⭐ 🌸 ⭐ 🌸 ⭐ 🌸 ⭐';
+    position: absolute;
+    top: 4px; left: 0; right: 0;
+    font-size: 12px;
+    opacity: 0.4;
+    letter-spacing: 8px;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 900;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.15);
+    letter-spacing: 2px;
+  }
+  header p {
+    color: rgba(255,255,255,0.85);
+    font-size: 13px;
+    margin-top: 2px;
+  }
+
+  /* ===== SCORE BAR ===== */
+  .score-bar {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    padding: 12px 20px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .score-item {
+    text-align: center;
+    font-size: 12px;
+    color: #636e72;
+  }
+  .score-item span {
+    display: block;
+    font-size: 22px;
+    font-weight: 900;
+  }
+  .score-item.correct span { color: var(--correct); }
+  .score-item.wrong span { color: var(--wrong); }
+  .score-item.total span { color: var(--lavender); }
+
+  /* ===== MODE TABS ===== */
+  .mode-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    background: white;
+    border-bottom: 2px solid #f0f0f0;
+  }
+  .mode-tab {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 24px;
+    border: 2px solid #e0e0e0;
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mode-tab.active {
+    background: var(--pink);
+    border-color: var(--pink);
+    color: white;
+    box-shadow: 0 3px 10px rgba(255,107,157,0.35);
+  }
+
+  /* ===== UNIT SELECT ===== */
+  .unit-select {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px;
+    overflow-x: auto;
+    background: #fafafa;
+  }
+  .unit-btn {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: 16px;
+    border: 2px solid #ddd;
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .unit-btn.active {
+    background: var(--mint);
+    border-color: var(--mint);
+    color: white;
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  main {
+    padding: 20px 16px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ===== FLASH CARD ===== */
+  .flashcard-wrap {
+    perspective: 800px;
+    margin-bottom: 20px;
+  }
+  .flashcard {
+    width: 100%;
+    min-height: 200px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid transparent;
+  }
+  .flashcard:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.14); }
+  .flashcard::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--pink), var(--peach), var(--mint));
+  }
+  .card-hint { font-size: 12px; color: #aaa; margin-bottom: 8px; }
+  .card-word {
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--text);
+    letter-spacing: 1px;
+    text-align: center;
+  }
+  .card-phonetic { font-size: 14px; color: #999; margin-top: 6px; }
+  .card-meaning {
+    font-family: 'Kaisei Decol', serif;
+    font-size: 28px;
+    color: var(--pink);
+    font-weight: 700;
+    margin-top: 8px;
+    text-align: center;
+  }
+  .card-tap-hint {
+    position: absolute;
+    bottom: 12px;
+    font-size: 11px;
+    color: #ccc;
+  }
+  .card-num {
+    position: absolute;
+    top: 14px; right: 16px;
+    font-size: 12px;
+    color: #ccc;
+    font-weight: 700;
+  }
+
+  /* ===== FLASHCARD FLIP ===== */
+  .flip-inner {
+    width: 100%;
+    min-height: 200px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  .flip-inner.flipped { transform: rotateY(180deg); }
+  .flip-front, .flip-back {
+    position: absolute;
+    width: 100%;
+    min-height: 200px;
+    backface-visibility: hidden;
+    background: white;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  }
+  .flip-back {
+    transform: rotateY(180deg);
+    background: linear-gradient(135deg, #fff5f8, #fff);
+  }
+  .flip-front::before, .flip-back::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 5px;
+    border-radius: 24px 24px 0 0;
+    background: linear-gradient(90deg, var(--pink), var(--peach), var(--mint));
+  }
+
+  /* ===== QUIZ CHOICES ===== */
+  .choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .choice-btn {
+    padding: 14px 10px;
+    border-radius: 16px;
+    border: 2.5px solid #e8e8e8;
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .choice-btn:hover { border-color: var(--lavender); background: #f8f7ff; transform: scale(1.02); }
+  .choice-btn.correct { background: #e8fff5; border-color: var(--correct); color: var(--correct); }
+  .choice-btn.wrong { background: #fff0ee; border-color: var(--wrong); color: var(--wrong); }
+
+  /* ===== SPELLING INPUT ===== */
+  .spelling-wrap {
+    margin-top: 4px;
+  }
+  .spelling-input {
+    width: 100%;
+    font-family: 'Nunito', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    padding: 14px 20px;
+    border-radius: 16px;
+    border: 3px solid #e0e0e0;
+    outline: none;
+    text-align: center;
+    color: var(--text);
+    transition: border-color 0.2s;
+    letter-spacing: 4px;
+    background: white;
+  }
+  .spelling-input:focus { border-color: var(--lavender); }
+  .spelling-input.correct { border-color: var(--correct); background: #e8fff5; }
+  .spelling-input.wrong { border-color: var(--wrong); background: #fff0ee; }
+  .spelling-submit {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    border-radius: 16px;
+    border: none;
+    background: linear-gradient(135deg, var(--lavender), var(--sky));
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    letter-spacing: 1px;
+  }
+  .spelling-submit:active { transform: scale(0.97); opacity: 0.9; }
+
+  /* ===== FEEDBACK ===== */
+  .feedback {
+    text-align: center;
+    padding: 12px;
+    border-radius: 14px;
+    font-size: 18px;
+    font-weight: 900;
+    margin-top: 12px;
+    display: none;
+    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .feedback.correct { background: #e8fff5; color: var(--correct); display: block; }
+  .feedback.wrong { background: #fff0ee; color: var(--wrong); display: block; }
+
+  @keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  /* ===== NAV BUTTONS ===== */
+  .nav-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .nav-btn {
+    flex: 1;
+    padding: 13px;
+    border-radius: 16px;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .nav-btn.prev { background: #f0f0f0; color: #888; }
+  .nav-btn.next { background: linear-gradient(135deg, var(--pink), var(--peach)); color: white; box-shadow: 0 4px 16px rgba(255,107,157,0.3); }
+  .nav-btn:active { transform: scale(0.96); }
+
+  /* ===== PROGRESS ===== */
+  .progress-wrap {
+    margin-bottom: 16px;
+  }
+  .progress-label { font-size: 12px; color: #aaa; margin-bottom: 4px; }
+  .progress-bar {
+    height: 8px;
+    background: #eee;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--pink), var(--peach));
+    border-radius: 99px;
+    transition: width 0.4s;
+  }
+
+  /* ===== RESULT ===== */
+  .result-screen {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .result-screen.show { display: block; }
+  .result-emoji { font-size: 72px; animation: bounce 0.6s ease; }
+  .result-title { font-size: 28px; font-weight: 900; color: var(--pink); margin: 16px 0 8px; }
+  .result-score { font-size: 52px; font-weight: 900; color: var(--text); }
+  .result-score span { font-size: 20px; color: #aaa; }
+  .result-msg { color: #888; margin: 8px 0 24px; font-size: 15px; }
+  .restart-btn {
+    padding: 16px 48px;
+    border-radius: 24px;
+    border: none;
+    background: linear-gradient(135deg, var(--pink), var(--peach));
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(255,107,157,0.35);
+    transition: transform 0.15s;
+  }
+  .restart-btn:active { transform: scale(0.95); }
+
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+
+  /* ===== SCRAMBLE ===== */
+  .scramble-letters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin: 16px 0;
+  }
+  .letter-tile {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: 2.5px solid var(--lavender);
+    background: white;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--lavender);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Nunito', sans-serif;
+  }
+  .letter-tile:hover { background: var(--lavender); color: white; transform: scale(1.1); }
+  .letter-tile.used { opacity: 0.3; pointer-events: none; }
+  .answer-slots {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .answer-slot {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: 2.5px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #fafafa;
+  }
+  .answer-slot.filled { border-color: var(--mint); background: #f0fffe; }
+  .clear-btn {
+    padding: 8px 20px;
+    border-radius: 12px;
+    border: 2px solid #ddd;
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #aaa;
+    cursor: pointer;
+    margin-right: 8px;
+  }
+
+  /* ===== SPEAK BUTTON ===== */
+  .speak-btn {
+    display: block;
+    margin: 12px auto 0;
+    padding: 12px 32px;
+    border-radius: 24px;
+    border: 2.5px solid var(--sky);
+    background: white;
+    color: var(--sky);
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.18s;
+    -webkit-appearance: none;
+    appearance: none;
+    text-align: center;
+    width: 180px;
+    min-height: 48px;
+    box-sizing: border-box;
+  }
+  .speak-btn:hover { background: var(--sky); color: white; }
+  .speak-btn.speaking {
+    background: var(--sky);
+    color: white;
+    animation: pulse 0.6s infinite alternate;
+  }
+  @keyframes pulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+  }
+</style>
+</head>
+<body>
+
+<div id="browserBanner" style="display:none;background:#FFF3CD;border-bottom:2px solid #FFD700;padding:10px 16px;text-align:center;font-size:13px;font-weight:700;color:#856404;font-family:'Nunito',sans-serif;">
+  🔊 音声を使うには <span style="color:#d63031">Safari</span> で開いてください。<br>
+  <span style="font-weight:400;font-size:12px">ChromeやLINEブラウザでは音声が出ません</span>
+</div>
+
+<!-- 初回案内モーダル -->
+<div id="setupModal" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:white;border-radius:24px;padding:28px 24px;max-width:360px;width:100%;font-family:'Nunito',sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+    <div style="text-align:center;font-size:48px;margin-bottom:8px;">🌸</div>
+    <div style="text-align:center;font-size:20px;font-weight:900;color:#FF6B9D;margin-bottom:16px;">はじめに読んでね！</div>
+    <div style="font-size:14px;color:#444;line-height:1.8;">
+      <div style="background:#f8f8f8;border-radius:12px;padding:12px;margin-bottom:12px;">
+        <div style="font-weight:900;color:#2D3436;margin-bottom:6px;">🔊 音声を使うには</div>
+        <div>① このファイルを<b>ダウンロード</b>する</div>
+        <div>② <b>ファイルアプリ</b>に保存する</div>
+        <div>③ ファイルアプリから<b>Safari</b>で開く</div>
+      </div>
+      <div style="background:#fff5f8;border-radius:12px;padding:12px;">
+        <div style="font-weight:900;color:#FF6B9D;margin-bottom:4px;">⚠️ 注意</div>
+        <div style="font-size:13px;">LINEやChromeで開くと音声が出ません。かならずSafariで開いてください。</div>
+      </div>
+    </div>
+    <button onclick="document.getElementById('setupModal').style.display='none'" style="width:100%;margin-top:20px;padding:14px;border-radius:16px;border:none;background:linear-gradient(135deg,#FF6B9D,#FFB347);color:white;font-family:'Nunito',sans-serif;font-size:16px;font-weight:900;cursor:pointer;">
+      わかった！はじめる 🚀
+    </button>
+  </div>
+</div>
+<header>
+  <h1>🌸 英単語 れんしゅう 🌸</h1>
+  <p>中1 英単語 001〜057</p>
+</header>
+
+<div class="score-bar">
+  <div class="score-item correct">
+    <span id="correctCount">0</span>
+    せいかい
+  </div>
+  <div class="score-item wrong">
+    <span id="wrongCount">0</span>
+    まちがい
+  </div>
+  <div class="score-item total">
+    <span id="totalCount">0</span>
+    もんだい
+  </div>
+</div>
+
+<div class="mode-tabs">
+  <button class="mode-tab active" onclick="setMode('flash')">📖 カードを見る</button>
+  <button class="mode-tab" onclick="setMode('quiz')">🎯 英語を選ぶ</button>
+  <button class="mode-tab" onclick="setMode('spelling')">✏️ 英語を入力</button>
+  <button class="mode-tab" onclick="setMode('scramble')">🔀 ならびかえ</button>
+</div>
+
+<div class="unit-select">
+  <button class="unit-btn active" onclick="setUnit('all')">すべて</button>
+  <button class="unit-btn" onclick="setUnit(1)">Unit1</button>
+  <button class="unit-btn" onclick="setUnit(2)">Unit2</button>
+  <button class="unit-btn" onclick="setUnit(3)">Unit3</button>
+</div>
+
+<main>
+  <div class="progress-wrap">
+    <div class="progress-label" id="progressLabel">1 / 57</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:2%"></div></div>
+  </div>
+
+  <!-- FLASH CARD MODE -->
+  <div id="flashMode">
+    <div class="flashcard-wrap" onclick="flipCard()">
+      <div class="flip-inner" id="flipInner">
+        <div class="flip-front">
+          <div class="card-hint">英語を見て日本語は？</div>
+          <div class="card-word" id="flashWord">picture</div>
+          <div class="card-phonetic" id="flashPhonetic">[píktʃər]</div>
+          <div class="card-tap-hint">👆 タップで答えを見る</div>
+          <div class="card-num" id="flashNum">001</div>
+        </div>
+        <div class="flip-back">
+          <div class="card-hint">意味</div>
+          <div class="card-meaning" id="flashMeaning">絵、写真</div>
+          <div class="card-word" style="font-size:24px;margin-top:12px;color:#aaa" id="flashWordBack">picture</div>
+          <div class="card-tap-hint">👆 タップで裏返す</div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center"><button class="speak-btn" onclick="speakWord()">🔊 読み上げる</button></div>
+    <div class="nav-btns">
+      <button class="nav-btn prev" onclick="prevCard()">◀ まえ</button>
+      <button class="nav-btn next" onclick="nextCard()">つぎ ▶</button>
+    </div>
+  </div>
+
+  <!-- QUIZ MODE -->
+  <div id="quizMode" style="display:none">
+    <div class="flashcard" style="cursor:default;min-height:140px">
+      <div class="card-hint" id="quizHint">日本語を見て英語を選ぼう！</div>
+      <div class="card-meaning" id="quizQuestion" style="font-size:32px">絵、写真</div>
+      <div class="card-num" id="quizNum">001</div>
+    </div>
+    <div style="text-align:center"><button class="speak-btn" onclick="speakWord()">🔊 読み上げる</button></div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="quizFeedback"></div>
+    <div class="nav-btns" style="margin-top:12px">
+      <button class="nav-btn next" id="quizNextBtn" onclick="nextQuestion()" style="display:none">つぎへ ▶</button>
+    </div>
+  </div>
+
+  <!-- SPELLING MODE -->
+  <div id="spellingMode" style="display:none">
+    <div class="flashcard" style="cursor:default;min-height:140px">
+      <div class="card-hint">日本語を見てスペルを入力！</div>
+      <div class="card-meaning" id="spellingQuestion" style="font-size:32px">絵、写真</div>
+      <div class="card-phonetic" id="spellingPhonetic">[píktʃər]</div>
+      <div class="card-num" id="spellingNum">001</div>
+    </div>
+    <div style="text-align:center"><button class="speak-btn" onclick="speakWord()">🔊 読み上げる</button></div>
+    <div class="spelling-wrap">
+      <input type="text" class="spelling-input" id="spellingInput" placeholder="えいごで入力..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter')checkSpelling()">
+      <button class="spelling-submit" onclick="checkSpelling()">✅ こたえる</button>
+    </div>
+    <div class="feedback" id="spellingFeedback"></div>
+    <div class="nav-btns" style="margin-top:12px">
+      <button class="nav-btn next" id="spellingNextBtn" onclick="nextSpelling()" style="display:none">つぎへ ▶</button>
+    </div>
+  </div>
+
+  <!-- SCRAMBLE MODE -->
+  <div id="scrambleMode" style="display:none">
+    <div class="flashcard" style="cursor:default;min-height:120px">
+      <div class="card-hint">日本語を見て文字をならべかえよう！</div>
+      <div class="card-meaning" id="scrambleQuestion" style="font-size:32px">絵、写真</div>
+      <div class="card-num" id="scrambleNum">001</div>
+    </div>
+    <div style="text-align:center"><button class="speak-btn" onclick="speakWord()">🔊 読み上げる</button></div>
+    <div class="answer-slots" id="answerSlots"></div>
+    <div class="scramble-letters" id="scrambleLetters"></div>
+    <div style="text-align:center;margin-bottom:8px">
+      <button class="clear-btn" onclick="clearScramble()">🔄 クリア</button>
+    </div>
+    <div class="feedback" id="scrambleFeedback"></div>
+    <div class="nav-btns">
+      <button class="nav-btn next" id="scrambleNextBtn" onclick="nextScramble()" style="display:none">つぎへ ▶</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-screen" id="resultScreen">
+    <div class="result-emoji" id="resultEmoji">🎉</div>
+    <div class="result-title">おわった！</div>
+    <div class="result-score"><span id="resultCorrect">0</span><span> / <span id="resultTotal">0</span>もん せいかい</span></div>
+    <div class="result-msg" id="resultMsg">すごい！！</div>
+    <button class="restart-btn" onclick="restart()">🔁 もう一度！</button>
+  </div>
+</main>
+
+<script>
+const ALL_WORDS = [
+  // Unit 1 - 家の中
+  {id:'001',unit:1,en:'picture',ja:'絵、写真',ph:'[píktʃər]'},
+  {id:'002',unit:1,en:'computer',ja:'コンピューター',ph:'[kəmpjúːtər]'},
+  {id:'003',unit:1,en:'magazine',ja:'雑誌',ph:'[mǽgəziːn]'},
+  {id:'004',unit:1,en:'letter',ja:'手紙、文字',ph:'[létər]'},
+  {id:'005',unit:1,en:'table',ja:'テーブル、食卓',ph:'[téibl]'},
+  {id:'006',unit:1,en:'kitchen',ja:'台所',ph:'[kítʃ(ə)n]'},
+  {id:'007',unit:1,en:'chopstick',ja:'（食事用の）はし',ph:'[tʃá(ː)pstik]'},
+  {id:'008',unit:1,en:'bedroom',ja:'寝室',ph:'[bédruːm]'},
+  {id:'009',unit:1,en:'brush',ja:'ブラシ、をみがく',ph:'[brʌʃ]'},
+  {id:'010',unit:1,en:'video',ja:'ビデオ',ph:'[vídiou]'},
+  {id:'011',unit:1,en:'suitcase',ja:'スーツケース',ph:'[súːtkeis]'},
+  {id:'012',unit:1,en:'key',ja:'かぎ',ph:'[kiː]'},
+  {id:'013',unit:1,en:'window',ja:'窓',ph:'[wíndou]'},
+  {id:'014',unit:1,en:'pet',ja:'ペット',ph:'[pet]'},
+  // Unit 1 - 時間
+  {id:'015',unit:1,en:'yesterday',ja:'昨日',ph:'[jéstərdi]'},
+  {id:'016',unit:1,en:'tomorrow',ja:'明日',ph:'[təmá(ː)rou]'},
+  {id:'017',unit:1,en:'now',ja:'今、現在は',ph:'[nau]'},
+  {id:'018',unit:1,en:'hour',ja:'1時間、時刻',ph:'[áuər]'},
+  {id:'019',unit:1,en:'minute',ja:'分',ph:'[mínit]'},
+  // Unit 2 - 時間
+  {id:'020',unit:2,en:'month',ja:'1カ月、月',ph:'[mʌnθ]'},
+  {id:'021',unit:2,en:'year',ja:'年、〜歳',ph:'[jiər]'},
+  {id:'022',unit:2,en:'lunchtime',ja:'昼食時間、ランチタイム',ph:'[lʌntʃtaim]'},
+  // Unit 2 - 学校
+  {id:'023',unit:2,en:'homework',ja:'宿題',ph:'[hóumwəːrk]'},
+  {id:'024',unit:2,en:'test',ja:'テスト、試験',ph:'[test]'},
+  {id:'025',unit:2,en:'class',ja:'クラス、学級、授業',ph:'[klæs]'},
+  {id:'026',unit:2,en:'classmate',ja:'クラスメート、同級生',ph:'[klǽsmeit]'},
+  {id:'027',unit:2,en:'lesson',ja:'授業、（教科書などの）課',ph:'[lés(ə)n]'},
+  {id:'028',unit:2,en:'subject',ja:'教科、科目、話題',ph:'[sʌbdʒekt]'},
+  {id:'029',unit:2,en:'math',ja:'数学',ph:'[mæθ]'},
+  {id:'030',unit:2,en:'science',ja:'科学、理科',ph:'[sáiəns]'},
+  {id:'031',unit:2,en:'history',ja:'歴史',ph:'[híst(ə)ri]'},
+  {id:'032',unit:2,en:'speech',ja:'話すこと、演説、スピーチ',ph:'[spiːtʃ]'},
+  {id:'033',unit:2,en:'report',ja:'報告（書）、レポート',ph:'[ripóːrt]'},
+  {id:'034',unit:2,en:'textbook',ja:'教科書',ph:'[tékstbuk]'},
+  {id:'035',unit:2,en:'notebook',ja:'ノート',ph:'[nóutbuk]'},
+  {id:'036',unit:2,en:'page',ja:'（本の）ページ',ph:'[peidʒ]'},
+  {id:'037',unit:2,en:'cafeteria',ja:'カフェテリア、（学校などの）食堂',ph:'[kæfətí(ə)riə]'},
+  {id:'038',unit:2,en:'library',ja:'図書館',ph:'[láibreri]'},
+  // Unit 3 - 学校
+  {id:'039',unit:3,en:'gym',ja:'体育館',ph:'[dʒim]'},
+  {id:'040',unit:3,en:'club',ja:'クラブ、部',ph:'[klʌb]'},
+  {id:'041',unit:3,en:'college',ja:'大学、単科大学',ph:'[ká(ː)lidʒ]'},
+  {id:'042',unit:3,en:'university',ja:'（総合）大学',ph:'[juːnivə́ːrsəti]'},
+  {id:'043',unit:3,en:'course',ja:'進路、科目',ph:'[kɔːrs]'},
+  {id:'044',unit:3,en:'contest',ja:'競技会、コンテスト',ph:'[ká(ː)ntest]'},
+  {id:'045',unit:3,en:'group',ja:'集団、グループ',ph:'[gruːp]'},
+  {id:'046',unit:3,en:'member',ja:'一員、会員、部員',ph:'[mémbər]'},
+  // Unit 3 - 町の中
+  {id:'047',unit:3,en:'park',ja:'公園、運動場',ph:'[páːrk]'},
+  {id:'048',unit:3,en:'restaurant',ja:'レストラン',ph:'[réstərənt]'},
+  {id:'049',unit:3,en:'store',ja:'店',ph:'[stɔːr]'},
+  {id:'050',unit:3,en:'bookstore',ja:'書店',ph:'[búkstɔːr]'},
+  {id:'051',unit:3,en:'museum',ja:'博物館、美術館',ph:'[mjuː(ː)zi(ː)əm]'},
+  {id:'052',unit:3,en:'station',ja:'駅',ph:'[stéiʃ(ə)n]'},
+  {id:'053',unit:3,en:'train',ja:'列車、電車',ph:'[trein]'},
+  {id:'054',unit:3,en:'airport',ja:'空港、飛行場',ph:'[éərpɔːrt]'},
+  {id:'055',unit:3,en:'bike',ja:'自転車',ph:'[baik]'},
+  {id:'056',unit:3,en:'street',ja:'通り',ph:'[striːt]'},
+  {id:'057',unit:3,en:'road',ja:'道、道路',ph:'[roud]'},
+];
+
+// ブラウザ判定：Chrome/LINEブラウザならバナー表示
+(function() {
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/.test(ua);
+  const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua) && !/CriOS/.test(ua) && !/Line/.test(ua);
+  if (isIOS && !isSafari) {
+    document.getElementById('browserBanner').style.display = 'block';
+  }
+})();
+
+let currentMode = 'flash';
+let currentUnit = 'all';
+let words = [...ALL_WORDS];
+let idx = 0;
+let correctCount = 0;
+let wrongCount = 0;
+let totalAnswered = 0;
+let answered = false;
+let scrambleAnswer = [];
+let scrambleUsed = [];
+
+// ===== SPEECH =====
+function speakWord() {
+  if (!window.speechSynthesis) return;
+  const w = words[idx];
+  window.speechSynthesis.cancel();
+
+  // 英語を読む
+  const enUtter = new SpeechSynthesisUtterance(w.en);
+  enUtter.lang = 'en-US';
+  enUtter.rate = 0.85;
+  enUtter.pitch = 1.4;
+
+  // 日本語を読む（英語の後）
+  const jaUtter = new SpeechSynthesisUtterance(w.ja.replace(/[、。]/g, ' '));
+  jaUtter.lang = 'ja-JP';
+  jaUtter.rate = 0.9;
+  jaUtter.pitch = 1.4;
+
+  // ボタンのアニメーション
+  document.querySelectorAll('.speak-btn').forEach(b => b.classList.add('speaking'));
+  jaUtter.onend = () => {
+    document.querySelectorAll('.speak-btn').forEach(b => b.classList.remove('speaking'));
+  };
+
+  window.speechSynthesis.speak(enUtter);
+  window.speechSynthesis.speak(jaUtter);
+}
+
+function getWords() {
+  if (currentUnit === 'all') return ALL_WORDS;
+  return ALL_WORDS.filter(w => w.unit === currentUnit);
+}
+
+function setUnit(u) {
+  currentUnit = u;
+  document.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  restart();
+}
+
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('flashMode').style.display = mode === 'flash' ? 'block' : 'none';
+  document.getElementById('quizMode').style.display = mode === 'quiz' ? 'block' : 'none';
+  document.getElementById('spellingMode').style.display = mode === 'spelling' ? 'block' : 'none';
+  document.getElementById('scrambleMode').style.display = mode === 'scramble' ? 'block' : 'none';
+  document.getElementById('resultScreen').classList.remove('show');
+  restart();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function updateProgress() {
+  words = shuffle(getWords());
+  idx = 0;
+  const total = words.length;
+  document.getElementById('progressLabel').textContent = `${idx + 1} / ${total}`;
+  document.getElementById('progressFill').style.width = `${((idx + 1) / total) * 100}%`;
+}
+
+function updateProgressCurrent() {
+  const total = words.length;
+  document.getElementById('progressLabel').textContent = `${idx + 1} / ${total}`;
+  document.getElementById('progressFill').style.width = `${((idx + 1) / total) * 100}%`;
+}
+
+// FLASH CARD
+let flipped = false;
+function loadFlash() {
+  const w = words[idx];
+  flipped = false;
+  document.getElementById('flipInner').classList.remove('flipped');
+  document.getElementById('flashWord').textContent = w.en;
+  document.getElementById('flashPhonetic').textContent = w.ph;
+  document.getElementById('flashMeaning').textContent = w.ja;
+  document.getElementById('flashWordBack').textContent = w.en;
+  document.getElementById('flashNum').textContent = w.id;
+  updateProgressCurrent();
+}
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById('flipInner').classList.toggle('flipped', flipped);
+}
+function nextCard() {
+  if (idx < words.length - 1) { idx++; loadFlash(); }
+  else showResult();
+}
+function prevCard() {
+  if (idx > 0) { idx--; loadFlash(); }
+}
+
+// QUIZ
+function loadQuiz() {
+  answered = false;
+  const w = words[idx];
+  document.getElementById('quizHint').textContent = '日本語を見て英語を選ぼう！';
+  document.getElementById('quizQuestion').textContent = w.ja;
+  document.getElementById('quizNum').textContent = w.id;
+  document.getElementById('quizFeedback').className = 'feedback';
+  document.getElementById('quizNextBtn').style.display = 'none';
+  updateProgressCurrent();
+
+  // generate 4 choices
+  const others = ALL_WORDS.filter(x => x.en !== w.en);
+  const wrong3 = shuffle(others).slice(0, 3);
+  const choices = shuffle([w, ...wrong3]);
+  const choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+  choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = c.en;
+    btn.onclick = () => selectChoice(c.en, w.en, btn);
+    choicesEl.appendChild(btn);
+  });
+}
+
+function selectChoice(selected, correct, btn) {
+  if (answered) return;
+  answered = true;
+  totalAnswered++;
+  const fb = document.getElementById('quizFeedback');
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    if (b.textContent === correct) b.classList.add('correct');
+  });
+  if (selected === correct) {
+    correctCount++;
+    btn.classList.add('correct');
+    fb.textContent = '⭐ せいかい！すごい！';
+    fb.className = 'feedback correct';
+  } else {
+    wrongCount++;
+    btn.classList.add('wrong');
+    fb.textContent = `❌ まちがい... 正解は「${correct}」`;
+    fb.className = 'feedback wrong';
+  }
+  updateScore();
+  document.getElementById('quizNextBtn').style.display = 'block';
+}
+
+function nextQuestion() {
+  if (idx < words.length - 1) { idx++; loadQuiz(); }
+  else showResult();
+}
+
+// SPELLING
+function loadSpelling() {
+  answered = false;
+  const w = words[idx];
+  document.getElementById('spellingQuestion').textContent = w.ja;
+  document.getElementById('spellingPhonetic').textContent = w.ph;
+  document.getElementById('spellingNum').textContent = w.id;
+  document.getElementById('spellingInput').value = '';
+  document.getElementById('spellingInput').className = 'spelling-input';
+  document.getElementById('spellingFeedback').className = 'feedback';
+  document.getElementById('spellingNextBtn').style.display = 'none';
+  updateProgressCurrent();
+  setTimeout(() => document.getElementById('spellingInput').focus(), 100);
+}
+
+function checkSpelling() {
+  if (answered) return;
+  const input = document.getElementById('spellingInput');
+  const answer = input.value.trim().toLowerCase();
+  const correct = words[idx].en.toLowerCase();
+  answered = true;
+  totalAnswered++;
+  const fb = document.getElementById('spellingFeedback');
+  if (answer === correct) {
+    correctCount++;
+    input.className = 'spelling-input correct';
+    fb.textContent = '⭐ せいかい！パーフェクト！';
+    fb.className = 'feedback correct';
+  } else {
+    wrongCount++;
+    input.className = 'spelling-input wrong';
+    fb.textContent = `❌ まちがい... 正解は「${words[idx].en}」`;
+    fb.className = 'feedback wrong';
+    input.value = words[idx].en;
+  }
+  updateScore();
+  document.getElementById('spellingNextBtn').style.display = 'block';
+}
+
+function nextSpelling() {
+  if (idx < words.length - 1) { idx++; loadSpelling(); }
+  else showResult();
+}
+
+// SCRAMBLE
+function loadScramble() {
+  answered = false;
+  const w = words[idx];
+  document.getElementById('scrambleQuestion').textContent = w.ja;
+  document.getElementById('scrambleNum').textContent = w.id;
+  document.getElementById('scrambleFeedback').className = 'feedback';
+  document.getElementById('scrambleNextBtn').style.display = 'none';
+  updateProgressCurrent();
+
+  scrambleAnswer = [];
+  scrambleUsed = [];
+  const letters = shuffle(w.en.split(''));
+
+  // answer slots
+  const slots = document.getElementById('answerSlots');
+  slots.innerHTML = '';
+  w.en.split('').forEach((_, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'answer-slot';
+    slot.dataset.index = i;
+    slot.onclick = () => removeFromSlot(i);
+    slots.appendChild(slot);
+  });
+
+  // letter tiles
+  const lettersEl = document.getElementById('scrambleLetters');
+  lettersEl.innerHTML = '';
+  letters.forEach((letter, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'letter-tile';
+    tile.textContent = letter;
+    tile.dataset.tileIndex = i;
+    tile.onclick = () => addLetter(letter, i);
+    lettersEl.appendChild(tile);
+  });
+}
+
+function addLetter(letter, tileIndex) {
+  if (answered) return;
+  const w = words[idx];
+  const slots = document.querySelectorAll('.answer-slot');
+  const nextEmpty = [...slots].findIndex(s => !s.dataset.filled);
+  if (nextEmpty === -1) return;
+
+  scrambleAnswer.push({ letter, tileIndex, slotIndex: nextEmpty });
+  slots[nextEmpty].textContent = letter;
+  slots[nextEmpty].classList.add('filled');
+  slots[nextEmpty].dataset.filled = 'true';
+
+  const tile = document.querySelector(`[data-tile-index="${tileIndex}"]`);
+  if (tile) tile.classList.add('used');
+
+  // check if complete
+  if (scrambleAnswer.length === w.en.length) {
+    const formed = scrambleAnswer.map(a => a.letter).join('');
+    checkScramble(formed, w.en);
+  }
+}
+
+function removeFromSlot(slotIndex) {
+  if (answered) return;
+  const entry = scrambleAnswer.find(a => a.slotIndex === slotIndex);
+  if (!entry) return;
+
+  const tile = document.querySelector(`[data-tile-index="${entry.tileIndex}"]`);
+  if (tile) tile.classList.remove('used');
+
+  const slot = document.querySelectorAll('.answer-slot')[slotIndex];
+  slot.textContent = '';
+  slot.classList.remove('filled');
+  delete slot.dataset.filled;
+
+  scrambleAnswer = scrambleAnswer.filter(a => a.slotIndex !== slotIndex);
+}
+
+function clearScramble() {
+  if (answered) return;
+  scrambleAnswer = [];
+  document.querySelectorAll('.answer-slot').forEach(s => {
+    s.textContent = '';
+    s.classList.remove('filled');
+    delete s.dataset.filled;
+  });
+  document.querySelectorAll('.letter-tile').forEach(t => t.classList.remove('used'));
+}
+
+function checkScramble(formed, correct) {
+  answered = true;
+  totalAnswered++;
+  const fb = document.getElementById('scrambleFeedback');
+  if (formed.toLowerCase() === correct.toLowerCase()) {
+    correctCount++;
+    fb.textContent = '⭐ せいかい！かんぺき！';
+    fb.className = 'feedback correct';
+  } else {
+    wrongCount++;
+    fb.textContent = `❌ まちがい... 正解は「${correct}」`;
+    fb.className = 'feedback wrong';
+  }
+  updateScore();
+  document.getElementById('scrambleNextBtn').style.display = 'block';
+}
+
+function nextScramble() {
+  if (idx < words.length - 1) { idx++; loadScramble(); }
+  else showResult();
+}
+
+function updateScore() {
+  document.getElementById('correctCount').textContent = correctCount;
+  document.getElementById('wrongCount').textContent = wrongCount;
+  document.getElementById('totalCount').textContent = totalAnswered;
+}
+
+function showResult() {
+  document.getElementById('flashMode').style.display = 'none';
+  document.getElementById('quizMode').style.display = 'none';
+  document.getElementById('spellingMode').style.display = 'none';
+  document.getElementById('scrambleMode').style.display = 'none';
+  const screen = document.getElementById('resultScreen');
+  screen.classList.add('show');
+  const total = words.length;
+  document.getElementById('resultCorrect').textContent = correctCount;
+  document.getElementById('resultTotal').textContent = total;
+  const pct = correctCount / total;
+  let emoji = '😊', msg = 'よくがんばったね！';
+  if (pct === 1) { emoji = '🏆'; msg = 'ぜんもんせいかい！さいこう！！'; }
+  else if (pct >= 0.8) { emoji = '🌟'; msg = 'すごい！！もうちょっとでパーフェクト！'; }
+  else if (pct >= 0.6) { emoji = '😊'; msg = 'いいかんじ！もう一度チャレンジしよう！'; }
+  else { emoji = '💪'; msg = 'つぎはもっとできる！がんばれ！'; }
+  document.getElementById('resultEmoji').textContent = emoji;
+  document.getElementById('resultMsg').textContent = msg;
+}
+
+function restart() {
+  correctCount = 0; wrongCount = 0; totalAnswered = 0;
+  updateScore();
+  words = shuffle(getWords());
+  idx = 0;
+  document.getElementById('resultScreen').classList.remove('show');
+  document.getElementById('flashMode').style.display = currentMode === 'flash' ? 'block' : 'none';
+  document.getElementById('quizMode').style.display = currentMode === 'quiz' ? 'block' : 'none';
+  document.getElementById('spellingMode').style.display = currentMode === 'spelling' ? 'block' : 'none';
+  document.getElementById('scrambleMode').style.display = currentMode === 'scramble' ? 'block' : 'none';
+  if (currentMode === 'flash') loadFlash();
+  else if (currentMode === 'quiz') loadQuiz();
+  else if (currentMode === 'spelling') loadSpelling();
+  else if (currentMode === 'scramble') loadScramble();
+}
+
+// INIT
+words = shuffle(getWords());
+loadFlash();
+</script>
+</body>
+</html>
